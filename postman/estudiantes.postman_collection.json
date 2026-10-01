@@ -1,0 +1,126 @@
+{
+  "info": {
+    "_postman_id": "be352cc1-f8c4-40f0-9d8b-1941c02ea8b0",
+    "name": "CS-002 - Estudiantes",
+    "description": "Registro y listado de estudiantes. Inicia PostgreSQL y la API antes de ejecutar la colección. Cada POST crea un estudiante.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Listar estudiantes",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/students",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "students"
+          ]
+        },
+        "description": "Devuelve todos los estudiantes. Si no se han registrado estudiantes, devuelve un arreglo vacío."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Estado 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"La respuesta es un arreglo de estudiantes\", function () {",
+              "    const students = pm.response.json();",
+              "    pm.expect(students).to.be.an(\"array\");",
+              "    students.forEach(function (student) {",
+              "        pm.expect(student).to.have.all.keys(\"id\", \"full_name\", \"email\", \"enrollment_date\");",
+              "        pm.expect(student.id).to.be.a(\"number\");",
+              "        pm.expect(Number.isInteger(student.id)).to.eql(true);",
+              "        pm.expect(student.full_name).to.be.a(\"string\");",
+              "        pm.expect(student.email).to.be.a(\"string\");",
+              "        pm.expect(student.enrollment_date).to.match(/^\\d{4}-\\d{2}-\\d{2}$/);",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Registrar estudiante",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Ana López\",\n  \"email\": \"ana.lopez@example.com\",\n  \"enrollment_date\": \"2026-09-25\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/students",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "students"
+          ]
+        },
+        "description": "Registra un estudiante y devuelve su id generado. No envíes el id en el cuerpo."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Estado 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Devuelve los datos registrados y un id generado\", function () {",
+              "    const student = pm.response.json();",
+              "    const sent = JSON.parse(pm.request.body.raw);",
+              "    pm.expect(student).to.have.all.keys(\"id\", \"full_name\", \"email\", \"enrollment_date\");",
+              "    pm.expect(student.id).to.be.a(\"number\").and.to.be.above(0);",
+              "    pm.expect(Number.isInteger(student.id)).to.eql(true);",
+              "    pm.expect(student.full_name).to.eql(sent.full_name);",
+              "    pm.expect(student.email).to.eql(sent.email);",
+              "    pm.expect(student.enrollment_date).to.eql(sent.enrollment_date);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
